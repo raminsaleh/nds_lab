@@ -1,0 +1,41 @@
+# Master archive (اختیاری اما مفید)
+- id: nds_archive_root
+  title: "NDS_Archive (Drive root)"
+  link: "https://drive.google.com/drive/folders/1bJlmdQrMLu1TqVE0B6mcU6m8r53HhblQ?usp=share_link"
+  type: folder
+  notes: "data/raw, data/processed, patterns_examples, pdfs"
+
+# PDF کلیدی
+- id: jafarian_money_mgmt_nds
+  title: "Advanced Money Management Strategy Applicable to Nodal Displacement Geometry"
+  author: "Iraj Jafarian"
+  year: 2014
+  link: "https://drive.google.com/file/d/195Xlk7iqd4Vf6cIerxaogzhqQHfmv270/view?usp=share_link"
+  filetype: pdf
+  notes: "بخش‌های ΔE و money management"
+
+# یک CSV نمونه (processed) برای تست
+- id: us30_m15_sample
+  title: "US30 M15 (processed sample)"
+  link: "https://drive.google.com/file/d/1yHOi2cZk6FoElq8oPuTYfTegjuGX3bX-/view?usp=share_link"
+  filetype: csv
+  tz: UTC
+  schema: ["time","open","high","low","close"]
+  date_range: ["2016-10-27","2025-07-15"]
+
+# چند تصویر/ویدئوی الگو (اختیاری ولی مفید)
+- id: nds_pattern_videos
+  title: "NDS pattern videos"
+  type: video-bundle
+  files:
+    - "https://drive.google.com/file/d/1ZQNt6Tg2Cx4S.../view?usp=share_link"
+    - "https://drive.google.com/file/d/1WR3PoQwDE-FD8c_Rd5wdON1NLy.../view?usp=share_link"
+  notes: "case A/B"
+
+- id: nds_pattern_videos
+  title: "NDS pattern videos"
+  type: video-bundle
+  files:
+  link: "https://drive.google.com/file/d/12QtN6Tg2Cx43ERnCEZM0uqTWg2Z0NYM6/view?usp=share_link"
+  link: "https://drive.google.com/file/d/1WR3PoQwDE-FbQC_Rd5WdONIINLgYd5Hq/view?usp=share_link"
+  notes: "case A/B"
