@@ -1,0 +1,61 @@
+name: Data QA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy
+
+      - name: Run QA on US30_M15_sample.csv
+        run: |
+          python - <<'PY'
+          from src.python.nds_data_qa import qa_csv
+          import json, pathlib
+
+          path = "data/US30_M15_sample.csv"
+          report = qa_csv(path, timeframe="15T")
+
+          outdir = pathlib.Path("reports"); outdir.mkdir(exist_ok=True)
+          (outdir / "qa_US30_M15_sample.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+          # Markdown summary
+          md  = ["# Data QA — US30_M15_sample", ""]
+          md += [f"**Rows:** {report['n_rows']}"]
+          if report["issues"]:
+            md += ["", "## Issues"]
+            for i, it in enumerate(report["issues"], 1):
+              extra = ", ".join(f"{k}={v}" for k, v in it.items() if k not in ("type","msg"))
+              line = f"- **{it['type']}** — {it['msg']}" + (f" ({extra})" if extra else "")
+              md.append(line)
+          else:
+            md += ["", "No issues detected."]
+
+          (outdir / "qa_US30_M15_sample.md").write_text("\n".join(md), encoding="utf-8")
+          print("QA report written to reports/qa_US30_M15_sample.{json,md}")
+          PY
+
+      - name: Commit QA report
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci(qa): add QA report for US30_M15_sample"
+          file_pattern: reports/*
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-report
+          path: reports/
