@@ -6,6 +6,9 @@ on:
 jobs:
   qa:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src/python
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,24 +26,29 @@ jobs:
       - name: Run QA on US30_M15_sample.csv
         run: |
           python - <<'PY'
-          from src.python.nds_data_qa import qa_csv
-          import json, pathlib
+          import json, pathlib, sys
+          # اگر ترجیح می‌دی از PYTHONPATH استفاده نکنی، این خط هم کافی است:
+          sys.path.append(str(pathlib.Path("src/python").resolve()))
+          from nds_data_qa import qa_csv
 
-          path = "data/US30_M15_sample.csv"
-          report = qa_csv(path, timeframe="15T")
+          path = pathlib.Path("data/US30_M15_sample.csv")
+          if not path.exists():
+            print(f"ERROR: {path} not found"); raise SystemExit(1)
+
+          report = qa_csv(str(path), timeframe="15T")
 
           outdir = pathlib.Path("reports"); outdir.mkdir(exist_ok=True)
-          (outdir / "qa_US30_M15_sample.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+          (outdir / "qa_US30_M15_sample.json").write_text(
+              json.dumps(report, indent=2), encoding="utf-8"
+          )
 
-          # Markdown summary
           md  = ["# Data QA — US30_M15_sample", ""]
           md += [f"**Rows:** {report['n_rows']}"]
           if report["issues"]:
             md += ["", "## Issues"]
-            for i, it in enumerate(report["issues"], 1):
+            for it in report["issues"]:
               extra = ", ".join(f"{k}={v}" for k, v in it.items() if k not in ("type","msg"))
-              line = f"- **{it['type']}** — {it['msg']}" + (f" ({extra})" if extra else "")
-              md.append(line)
+              md.append(f"- **{it['type']}** — {it['msg']}" + (f" ({extra})" if extra else ""))
           else:
             md += ["", "No issues detected."]
 
@@ -53,7 +61,7 @@ jobs:
         with:
           commit_message: "ci(qa): add QA report for US30_M15_sample"
           file_pattern: reports/*
-      
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
