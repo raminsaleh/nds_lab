@@ -1,0 +1,20 @@
+project: NDS Lab
+owner_repo: "<OWNER>/<REPO>"
+branch: "main"
+spec:
+  current: "spec/NDS_CORE_SPEC_v0.3.md"
+  evidence_map: "spec/NDS_EVIDENCE_MAP_v0.1.md"
+  reading_queue: "spec/READING_QUEUE.md"
+local_sources:
+  pdfs_dir: "/mnt/data/nds_sources/pdfs"
+  images_dir: "/mnt/data/nds_sources/images"
+  videos_dir: "/mnt/data/nds_sources/videos"
+inventories:
+  pdf_index: "/mnt/data/nds_sources/pdfs/INDEX.json"
+  images_index: "/mnt/data/nds_sources/images/INDEX.json"
+  videos_index: "/mnt/data/nds_sources/videos/INDEX.json"
+  pdf_quickscan: "/mnt/data/reports/pdf_quickscan.json"
+conventions:
+  csv_schema: ["time","open","high","low","close"]
+  timeframe: "M15"
+  node_numbering: "sequential (e.g., 1051,1052,...)"
