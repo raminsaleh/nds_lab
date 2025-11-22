@@ -1,8 +1,8 @@
 project: NDS Lab
-owner_repo: "<OWNER>/<REPO>"
+owner_repo: "raminsaleh/nds_lab"
 branch: "main"
 spec:
-  current: "spec/NDS_CORE_SPEC_v0.3.md"
+  current: "spec/NDS_CORE_SPEC_v0.3.1.md"
   evidence_map: "spec/NDS_EVIDENCE_MAP_v0.1.md"
   reading_queue: "spec/READING_QUEUE.md"
 local_sources:
