@@ -6,20 +6,20 @@ smoothing:
   window: 9
 
 derivative:
-  deadzone_mode: "sigma"
-  deadzone_k: 0.15
+  deadzone_mode: "atr"
+  deadzone_k: 0.12
   sigma_window: 20
 
 prominence:
   mode: "atr"
   k_sigma: 1.0
-  k_atr: 1.0
+  k_atr: 0.8
   atr_window: 14
-  epsilon_floor: 1.0
+  epsilon_floor: 2.0
 
 separation:
   tau_min_bars: 3
-  eps_min_atr14: 0.2
+  eps_min_atr14: 0.25
 
 hooks:
   alpha_low: 0.8
