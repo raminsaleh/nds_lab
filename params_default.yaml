@@ -1,0 +1,35 @@
+# NDS default parameters (v0.1) — to be calibrated via Evidence Map
+timeframe: "M15"
+
+smoothing:
+  kind: "ema"
+  window: 9
+
+derivative:
+  deadzone_mode: "sigma"
+  deadzone_k: 0.15
+  sigma_window: 20
+
+prominence:
+  mode: "atr"
+  k_sigma: 1.0
+  k_atr: 1.0
+  atr_window: 14
+  epsilon_floor: 1.0
+
+separation:
+  tau_min_bars: 3
+  eps_min_atr14: 0.2
+
+hooks:
+  alpha_low: 0.8
+  alpha_high: 1.2
+  beta_low: 0.8
+  beta_high: 1.2
+  epsilon_hook: 0.05
+
+confirm:
+  w_bars: 2
+
+risk_model:
+  garch: { p: 1, q: 1 }
