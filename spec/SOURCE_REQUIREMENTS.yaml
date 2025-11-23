@@ -1,0 +1,76 @@
+requirements:
+  A_derivative_nodes:
+    claims:
+    - P′=0 با P″ برای قله/دره
+    - هموارسازی
+    - Deadzone
+    - Prominence (σ/ATR)
+    candidates_pdf:
+    - NDS ALL resources.pdf
+    - Basic Pos Sizing.pdf
+    - NDS  Advanced Trading Model.pdf
+    candidates_img:
+    - Screenshot 2024-06-07 at 00.06.44.PNG
+    candidates_vid:
+    - Rec 0006.mp4
+  B_sequences_invalidations:
+    claims:
+    - توالی N↔S
+    - 'I1..I4: separation, repaint, ...'
+    candidates_pdf:
+    - NDS ALL resources.pdf
+    - AI-NDS.Final.pdf
+    - Advanced_Quantitative_Trading_Integratin.pdf
+    candidates_img:
+    - IMG_0725.jpg
+    candidates_vid:
+    - Rec 0012.mp4
+  C_hooks_symmetry:
+    claims:
+    - H0..H3
+    - α/β/ε_hook
+    candidates_pdf:
+    - NDS_Strategy_English_Version.pdf
+    - NDS ALL resources.pdf
+    - AI-NDS.Final.pdf
+    candidates_img: []
+    candidates_vid:
+    - Algorithmic Trading.mov
+  D_bayes_feedback:
+    claims:
+    - Posterior رالی
+    - ΔE feedback
+    candidates_pdf:
+    - NDS ALL resources.pdf
+    - AI-NDS.Final.pdf
+    - Advanced_Quantitative_Trading_Integratin.pdf
+    candidates_img: []
+    candidates_vid: []
+  E_rf_meta_filter:
+    claims:
+    - RF متافیلتر
+    - ویژگی‌ها
+    candidates_pdf:
+    - NDS ALL resources.pdf
+    - AI-NDS.Final.pdf
+    - Advanced_Quantitative_Trading_Integratin.pdf
+    candidates_img: []
+    candidates_vid: []
+  F_garch_mm:
+    claims:
+    - GARCH ولتیلیتی
+    - MM/Position sizing
+    candidates_pdf:
+    - NDS ALL resources.pdf
+    - Simple Money Management.pdf
+    - Advanced_Money_Management_Strategy_Appli.pdf
+    candidates_img: []
+    candidates_vid: []
+  G_output_schema_mt5:
+    claims:
+    - Schema خروجی
+    - CSV/EA
+    candidates_pdf: []
+    candidates_img: []
+    candidates_vid:
+    - export_1731148455677.MOV
