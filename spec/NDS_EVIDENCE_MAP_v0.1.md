@@ -21,59 +21,62 @@
 ## A) مشتق، Deadzone و فیلترها
 **بند SPEC:** 2) تشخیص نود مشتق‌محور + Deadzone + Prominence  
 **شواهد (PDF/IMG/VID):**
-- [PDF: NDS ALL resources.pdf | p=?] — تعریف ریورسال با مشتق و پیش‌نیاز هموارسازی
-- [PDF: NDS  Advanced Trading Model.pdf | p=?] — جزئیات عملی روی تشخیص نقطه
-- [IMG: Screenshot 2024-06-07 at 00.06.44.PNG] — نمونه ناحیه ریورسال و تقارن محلی
-- [VID: Rec 0006.mp4 | t=?] — مشاهدهٔ صفرشدن مشتق و تأیید بصری
+- [PDF: NDS ALL resources.pdf | p=p49(6), p48(5)]
+- [PDF: NDS  Advanced Trading Model.pdf | p=p1(2), p2(2)]
+- [IMG: ._Screenshot 2024-06-07 at 00.06.44.PNG]
+- [IMG: ._Screenshot 2024-08-14 at 23.54.22 copy.jpg]
+- [VID: ._Rec 0006.mp4 | t=?]
 **یادداشت انطباق:** Deadzone برای حذف فلیپ‌های میکرو؛ آستانه‌های دامنه برحسب σ/ATR.  
 **وضعیت:** ☐
 
 ## B) توالی مجاز و قواعد ابطال (I1..I4)
 **بند SPEC:** 3) ترتیب‌ها و ابطال‌ها  
-**شواهد:**
-- [PDF: AI-NDS.Final.pdf | p=?] — تعریف ترتیب صعودی/نزولی و قیود
-- [PDF: NDS ALL resources.pdf | p=?] — نمونه‌های ابطال (separation/repaint)
-- [IMG: IMG_0725.jpg] — مثال تصویری نقض جدایش
-- [VID: Rec 0012.mp4 | t=?] — کیس نقض ترتیب و ابطال
+**شواهد (PDF/IMG/VID):**
+- [PDF: AI-NDS.Final.pdf | p=p5(12), p6(9)]
+- [PDF: NDS ALL resources.pdf | p=p21(12), p38(12)]
+- [IMG: ._IMG_0725.jpg]
+- [IMG: ._IMG_0726.jpg]
+- [VID: ._Rec 0006.mp4 | t=?]
 **یادداشت انطباق:** پرچم `higher_than_prev` مستقل ثبت شود؛ نگهبان ری‌پینت w کندل.  
 **وضعیت:** ☐
 
 ## C) کیفیت هوک (H0..H3) و تحمل‌ها (α/β/ε_hook)
 **بند SPEC:** 4) Hook Quality  
-**شواهد:**
-- [PDF: NDS_Strategy_English_Version.pdf | p=?] — تعریف تقارن قیمت/زمان و بازه تحمل
-- [PDF: AI-NDS.Final.pdf | p=?] — مثال‌های عملی H1/H2/H3
-- [VID: Algorithmic Trading.mov | t=?] — نمونه هوک کامل (H3) با هر دو تقارن
+**شواهد (PDF/IMG/VID):**
+- [PDF: NDS_Strategy_English_Version.pdf | p=p11(5), p2(4)]
+- [PDF: AI-NDS.Final.pdf | p=p5(6), p4(4)]
+- [VID: ._Algorithmic Trading.mov | t=?]
 **یادداشت انطباق:** α_low..α_high، β_low..β_high، ε_hook.  
 **وضعیت:** ☐
 
 ## D) پیش‌بینی رالی با بیزین و حلقهٔ بازخورد
 **بند SPEC:** (مطابق توضیح مدل شما)  
-**شواهد:**
-- [PDF: AI-NDS.Final.pdf | p=?] — چارچوب بیزین برای اندازهٔ رالی
-- [PDF: Advanced_Quantitative_Trading_Integratin.pdf | p=?] — اتصال به تخمین خطا و فیدبک
+**شواهد (PDF/IMG/VID):**
+- [PDF: AI-NDS.Final.pdf | p=p3(3), p1(2)]
+- [PDF: Advanced_Quantitative_Trading_Integratin.pdf | p=p3(3), p1(2)]
 **یادداشت انطباق:** استفاده از ΔE و hill-climbing برای اصلاح تخمین.  
 **وضعیت:** ☐
 
 ## E) Random Forest به‌عنوان متافیلتر
 **بند SPEC:** (مطابق توضیح مدل شما)  
-**شواهد:**
-- [PDF: AI-NDS.Final.pdf | p=?] — انتخاب ویژگی‌ها از نودها و ولتیلیتی
-- [PDF: Advanced_Quantitative_Trading_Integratin.pdf | p=?] — ارزیابی کیفیت سیگنال
+**شواهد (PDF/IMG/VID):**
+- [PDF: AI-NDS.Final.pdf | p=p3(8), p4(8)]
+- [PDF: Advanced_Quantitative_Trading_Integratin.pdf | p=p5(8), p3(7)]
+**یادداشت انطباق:** RF به‌عنوان متافیلتر کیفیت سیگنال.  
 **وضعیت:** ☐
 
 ## F) GARCH + Money Management
 **بند SPEC:** پیوند مدیریت ریسک/ولتیلیتی با خروجی نودها  
-**شواهد:**
-- [PDF: Advanced_Money_Management_Strategy_Appli.pdf | p=?] — منطق سایز پوزیشن و قیود عملی
-- [PDF: Simple Money Management.pdf | p=?] — قوانین ساده مکمل
-**یادداشت انطباق:** استفاده از σ̂_t (GARCH/ATR) برای SL/TP و پوزیشن‌سایز.  
+**شواهد (PDF/IMG/VID):**
+- [PDF: Advanced_Money_Management_Strategy_Appli.pdf | p=p4(21), p2(14)]
+- [PDF: Simple Money Management.pdf | p=p3(22), p2(21)]
+**یادداشت انطباق:** σ̂_t (GARCH/ATR) برای SL/TP و سایز پوزیشن.  
 **وضعیت:** ☐
 
 ## G) خروجی استاندارد و هم‌ترازی با MT5
 **بند SPEC:** 5) ستون‌های خروجی و سازگاری Python/MT5  
-**شواهد:**
-- [PDF: Advanced_Quantitative_Trading_Integratin.pdf | p=?] — فرمت خروجی/انتگره‌یشن
-- [VID: export_1731148455677.MOV | t=?] — نمایش خروجی/اکسپورت
-**یادداشت انطباق:** ستون‌های نهایی: node_id, time, price, node_type, higher_than_prev, hook_quality, seq_label?, σ_t, R̂, SL, TP, quality_score.  
+**شواهد (PDF/IMG/VID):**
+- [PDF: Advanced_Quantitative_Trading_Integratin.pdf | p=?]
+- [VID: ._export_1731148455677.MOV | t=?]
+**یادداشت انطباق:** ستون‌های نهایی میان Python/MT5 هم‌تراز بماند.  
 **وضعیت:** ☐
