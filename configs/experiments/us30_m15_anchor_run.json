@@ -1,0 +1,11 @@
+{
+  "mode": "single_timeframe",
+  "run_id": "us30_m15_anchor_run_001",
+  "dataset_label": "US30_M15_real_data",
+  "input_path": "data/us30/M15.csv",
+  "sequence_mode": "ascending",
+  "symbol": "US30",
+  "core_spec_version": "v2",
+  "build_version": "build_anchor_001",
+  "write_execution_handoff": true
+}
