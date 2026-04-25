@@ -8,7 +8,7 @@ import json
 import pandas as pd
 
 from src.python.deterministic_backtest_pipeline import DeterministicBacktestPipeline
-from src.python.node_engine import NDSConfig
+from src.python.nds_core import NDSConfig
 
 
 @dataclass
