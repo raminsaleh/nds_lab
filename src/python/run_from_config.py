@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 import pandas as pd
 
-from src.python.node_engine import NDSConfig
+from src.python.nds_core import NDSConfig
 from src.python.research_run_manager import ResearchRunManager
 
 
