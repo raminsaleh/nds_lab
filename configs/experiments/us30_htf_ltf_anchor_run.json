@@ -1,0 +1,15 @@
+{
+  "mode": "multitimeframe",
+  "run_id": "us30_htf_ltf_anchor_run_001",
+  "dataset_label": "US30_HTF_LTF_real_data",
+  "higher_input_path": "data/us30/H1.csv",
+  "lower_input_path": "data/us30/M15.csv",
+  "higher_timeframe_label": "H1",
+  "lower_timeframe_label": "M15",
+  "higher_sequence_mode": "ascending",
+  "lower_sequence_mode": "ascending",
+  "symbol": "US30",
+  "core_spec_version": "v2",
+  "build_version": "build_anchor_001",
+  "write_execution_handoff": true
+}
