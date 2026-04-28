@@ -57,7 +57,11 @@ class NDSDetector:
         if pm == "HL2":
             base = (self.df["high"].values + self.df["low"].values) / 2.0
         elif pm == "HLC3":
-            base = (self.df["high"].values + self.df["low"].values + self.df["close"].values) / 3.0
+            base = (
+                self.df["high"].values
+                + self.df["low"].values
+                + self.df["close"].values
+            ) / 3.0
         else:
             base = self.df["close"].values.astype(float)
         return self._smooth(base)
@@ -71,17 +75,29 @@ class NDSDetector:
         if sm == "sg":
             try:
                 from scipy.signal import savgol_filter
+
                 window = int(self.cfg.sg_window)
                 if window % 2 == 0:
                     window += 1
+
                 min_window = self.cfg.sg_polyorder + 2
                 if min_window % 2 == 0:
                     min_window += 1
+
                 window = max(window, min_window)
                 poly = min(self.cfg.sg_polyorder, window - 1)
-                return savgol_filter(x, window_length=window, polyorder=poly, mode="interp")
+
+                return savgol_filter(
+                    x,
+                    window_length=window,
+                    polyorder=poly,
+                    mode="interp",
+                )
             except Exception:
-                return pd.Series(x).ewm(span=self.cfg.ema_len, adjust=False).mean().values
+                return pd.Series(x).ewm(
+                    span=self.cfg.ema_len,
+                    adjust=False,
+                ).mean().values
         return x
 
     def _derivative(self, x: np.ndarray) -> np.ndarray:
@@ -97,7 +113,13 @@ class NDSDetector:
 
     def _local_sigma(self) -> np.ndarray:
         if self.cfg.vol_method.lower() == "std":
-            return pd.Series(self.df["close"].values).rolling(self.cfg.vol_len).std().bfill().values
+            return (
+                pd.Series(self.df["close"].values)
+                .rolling(self.cfg.vol_len)
+                .std()
+                .bfill()
+                .values
+            )
         return self._atr(self.cfg.vol_len)
 
     def detect_raw_nodes(self) -> List[Node]:
@@ -121,6 +143,7 @@ class NDSDetector:
             is_trough = (s_prev < 0) and (s_next > 0)
             if not (is_peak or is_trough):
                 continue
+
             if i - last_idx < min_distance:
                 continue
 
@@ -163,144 +186,7 @@ class NDSDetector:
     def export_for_mt5(self, path: str) -> None:
         if not self.nodes:
             raise ValueError("No nodes detected. Run detect_raw_nodes() first.")
-        out = pd.DataFrame(
-            [
-                {
-                    "node_id": n.id,
-                    "bar_index": n.idx,
-                    "time": n.t,
-                    "price": n.price,
-                    "node_type": n.node_type.name,
-                    "higher_than_prev": n.higher_than_prev,
-                }
-                for n in self.nodes
-            ]
-        )
-        out.to_csv(path, index=False)            base = self.df["close"].values.astype(float)
-        return self._smooth(base)
 
-    def _smooth(self, x: np.ndarray) -> np.ndarray:
-        sm = self.cfg.smoothing.lower()
-        if sm == "none":
-            return x
-        if sm == "ema":
-            return pd.Series(x).ewm(span=self.cfg.ema_len, adjust=False).mean().values
-        if sm == "sg":
-            # Savitzky–Golay if SciPy available, else fallback to EMA
-            try:
-                from scipy.signal import savgol_filter
-                window = int(self.cfg.sg_window)
-                # ensure odd and >= polyorder+2
-                if window % 2 == 0:
-                    window += 1
-                window = max(window, self.cfg.sg_polyorder + 2 if (self.cfg.sg_polyorder + 2) % 2 == 1 else self.cfg.sg_polyorder + 3)
-                poly = min(self.cfg.sg_polyorder, window - 1)
-                return savgol_filter(x, window_length=window, polyorder=poly, mode="interp")
-            except Exception:
-                return pd.Series(x).ewm(span=self.cfg.ema_len, adjust=False).mean().values
-        # default fallback
-        return x
-
-    def _derivative(self, x: np.ndarray) -> np.ndarray:
-        return np.gradient(x)
-
-    def _atr(self, length: int) -> np.ndarray:
-        h = self.df["high"].values
-        l = self.df["low"].values
-        c = self.df["close"].values
-        prev_c = np.r_[c[0], c[:-1]]
-        tr = np.maximum(h - l, np.maximum(np.abs(h - prev_c), np.abs(l - prev_c)))
-        atr = pd.Series(tr).ewm(alpha=1 / length, adjust=False).mean().values
-        return atr
-
-    def _local_sigma(self) -> np.ndarray:
-        if self.cfg.vol_method.lower() == "std":
-            return (
-                pd.Series(self.df["close"].values)
-                .rolling(self.cfg.vol_len)
-                .std()
-                .fillna(method="bfill")
-                .values
-            )
-        return self._atr(self.cfg.vol_len)
-
-    # ---------- detection ----------
-
-    def detect_raw_nodes(self) -> List[Node]:
-        """
-        Initial candidate-node detection (derivative sign-change + amplitude + min distance).
-        This is a working scaffold; strict NDS conditions will refine/replace parts.
-        """
-        p = self._price_curve()
-        d1 = self._derivative(p)
-        sig = self._local_sigma()
-
-        min_distance = max(1, int(self.cfg.min_distance))
-        nodes: List[Node] = []
-        node_id = 1
-        last_idx = -min_distance
-
-        sign = np.sign(d1)
-        # (optional) treat tiny derivatives as zero to avoid micro flips
-        eps = 1e-12
-
-        for i in range(1, len(p) - 1):
-            s_prev = sign[i - 1] if abs(d1[i - 1]) > eps else 0.0
-            s_next = sign[i + 1] if abs(d1[i + 1]) > eps else 0.0
-
-            is_peak = (s_prev > 0) and (s_next < 0)
-            is_trough = (s_prev < 0) and (s_next > 0)
-            if not (is_peak or is_trough):
-                continue
-
-            # spacing constraint
-            if i - last_idx < min_distance:
-                continue
-
-            # amplitude constraint vs previous node
-            if nodes:
-                amp = abs(p[i] - nodes[-1].price)
-                th = float(self.cfg.k_sigma) * float(sig[i])
-                if amp < th:
-                    continue
-
-            node = Node(
-                id=node_id,
-                idx=i,
-                price=float(p[i]),
-                t=self.df.loc[i, "time"],
-                node_type=NodeType.REVERSAL,
-            )
-            if nodes:
-                node.higher_than_prev = node.price > nodes[-1].price
-
-            nodes.append(node)
-            last_idx = i
-            node_id += 1
-
-        self.nodes = nodes
-        return nodes
-
-    # ---------- sequencing (placeholder to be implemented per SPEC) ----------
-
-    def classify_nodes_sequence(self) -> None:
-        """
-        Map nodes into roles (e.g., N1,S1,...) per NDS rules:
-        - ascending:  N1 → S1 → N2 → S2 → N3 → S3
-        - descending: S1 → N1 → S2 → N2 → S3 → N3
-        Will be implemented after SPEC v0.2 is finalized.
-        """
-        pass
-
-    # ---------- export ----------
-
-    def export_for_mt5(self, path: str) -> None:
-        """
-        Export nodes into a CSV for MT5 indicator/EA consumption.
-        Columns: node_id, bar_index, time, price, node_type, higher_than_prev
-        """
-        if not self.nodes:
-            raise ValueError("No nodes detected. Run detect_raw_nodes() first.")
         out = pd.DataFrame(
             [
                 {
