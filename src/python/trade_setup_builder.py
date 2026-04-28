@@ -61,11 +61,6 @@ class TradeSetupBuilder:
             ]
 
         price_map = self._build_price_map(sequenced_nodes)
-        last_123 = self._find_last_valid_123(bundle)
-        target_anchor = self._find_target_anchor(
-            sequenced_nodes=sequenced_nodes,
-            direction=direction_context.direction,
-        )
         candidate_nodes = self._direction_compatible_nodes(
             sequenced_nodes=sequenced_nodes,
             direction=direction_context.direction,
@@ -76,6 +71,179 @@ class TradeSetupBuilder:
             setup_time = getattr(node, "t")
 
             source_parts = ["direction", "sequence"]
+            invalid_reason: Optional[str] = None
+
+            last_123 = self._find_last_valid_123_before_time(
+                bundle=bundle,
+                sequenced_nodes=sequenced_nodes,
+                setup_time=setup_time,
+            )
+
+            stop_loss = self._project_stop_loss_from_123(
+                price_map=price_map,
+                last_123=last_123,
+                direction=direction_context.direction,
+            )
+            if stop_loss is None:
+                invalid_reason = "missing_123_anchor"
+                stop_loss = 0.0
+            else:
+                source_parts.append("123-anchor")
+
+            target_anchor = self._find_target_anchor_before_time(
+                sequenced_nodes=sequenced_nodes,
+                direction=direction_context.direction,
+                setup_time=setup_time,
+            )
+
+            target = self._project_target_from_anchor(
+                target_anchor=target_anchor,
+                direction=direction_context.direction,
+            )
+            if target is None:
+                if invalid_reason is None:
+                    invalid_reason = "missing_target_anchor"
+                target = entry_price
+            else:
+                source_parts.append("target-anchor")
+
+            if invalid_reason is None:
+                if direction_context.direction == "long":
+                    if stop_loss >= entry_price:
+                        invalid_reason = "stop_not_below_entry"
+                    elif target <= entry_price:
+                        invalid_reason = "target_not_above_entry"
+                else:
+                    if stop_loss <= entry_price:
+                        invalid_reason = "stop_not_above_entry"
+                    elif target >= entry_price:
+                        invalid_reason = "target_not_below_entry"
+
+            setups.append(
+                TradeSetup(
+                    setup_time=setup_time,
+                    direction=direction_context.direction,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    target=target,
+                    source_context="+".join(source_parts),
+                    setup_valid=(invalid_reason is None),
+                    invalid_reason=invalid_reason,
+                )
+            )
+
+        return setups
+
+    def _build_price_map(self, sequenced_nodes: List[object]) -> Dict[int, float]:
+        out: Dict[int, float] = {}
+        for node in sequenced_nodes:
+            out[int(getattr(node, "node_id"))] = float(getattr(node, "price"))
+        return out
+
+    def _direction_compatible_nodes(
+        self,
+        sequenced_nodes: List[object],
+        direction: str,
+    ) -> List[object]:
+        out: List[object] = []
+        for node in sequenced_nodes:
+            if not getattr(node, "sequence_valid", False):
+                continue
+            state = getattr(getattr(node, "sequence_state", None), "value", "")
+            if direction == "long" and state.startswith("N"):
+                out.append(node)
+            elif direction == "short" and state.startswith("S"):
+                out.append(node)
+        return out
+
+    def _find_last_valid_123_before_time(
+        self,
+        bundle: PatternBundle,
+        sequenced_nodes: List[object],
+        setup_time: pd.Timestamp,
+    ) -> Optional[object]:
+        node_time_map: Dict[int, pd.Timestamp] = {
+            int(getattr(node, "node_id")): getattr(node, "t")
+            for node in sequenced_nodes
+        }
+
+        eligible_patterns: List[Tuple[pd.Timestamp, object]] = []
+        for pattern in bundle.patterns_123:
+            if not getattr(pattern, "is_valid", False):
+                continue
+
+            anchor_ids = getattr(pattern, "anchor_node_ids", [])
+            anchor_times = [
+                node_time_map[node_id]
+                for node_id in anchor_ids
+                if node_id in node_time_map
+            ]
+            if not anchor_times:
+                continue
+
+            pattern_time = max(anchor_times)
+            if pattern_time <= setup_time:
+                eligible_patterns.append((pattern_time, pattern))
+
+        if not eligible_patterns:
+            return None
+
+        eligible_patterns.sort(key=lambda x: x[0])
+        return eligible_patterns[-1][1]
+
+    def _project_stop_loss_from_123(
+        self,
+        price_map: Dict[int, float],
+        last_123: Optional[object],
+        direction: str,
+    ) -> Optional[float]:
+        if last_123 is None:
+            return None
+
+        anchor_ids = getattr(last_123, "anchor_node_ids", [])
+        anchor_prices = [price_map[node_id] for node_id in anchor_ids if node_id in price_map]
+        if not anchor_prices:
+            return None
+
+        if direction == "long":
+            return min(anchor_prices) - self.stop_anchor_buffer_points
+        return max(anchor_prices) + self.stop_anchor_buffer_points
+
+    def _find_target_anchor_before_time(
+        self,
+        sequenced_nodes: List[object],
+        direction: str,
+        setup_time: pd.Timestamp,
+    ) -> Optional[Tuple[str, float]]:
+        for node in reversed(sequenced_nodes):
+            node_time = getattr(node, "t")
+            if node_time > setup_time:
+                continue
+            if not getattr(node, "sequence_valid", False):
+                continue
+
+            state = getattr(getattr(node, "sequence_state", None), "value", "")
+            price = float(getattr(node, "price"))
+
+            if direction == "long" and state in {"N1", "N2"}:
+                return state, price
+            if direction == "short" and state in {"S1", "S2"}:
+                return state, price
+
+        return None
+
+    def _project_target_from_anchor(
+        self,
+        target_anchor: Optional[Tuple[str, float]],
+        direction: str,
+    ) -> Optional[float]:
+        if target_anchor is None:
+            return None
+
+        _, anchor_price = target_anchor
+        if direction == "long":
+            return anchor_price + self.target_anchor_buffer_points
+        return anchor_price - self.target_anchor_buffer_points            source_parts = ["direction", "sequence"]
             invalid_reason: Optional[str] = None
 
             stop_loss = self._project_stop_loss_from_123(
