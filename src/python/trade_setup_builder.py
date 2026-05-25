@@ -60,7 +60,6 @@ class TradeSetupBuilder:
                 )
             ]
 
-        price_map = self._build_price_map(sequenced_nodes)
         candidate_nodes = self._direction_compatible_nodes(
             sequenced_nodes=sequenced_nodes,
             direction=direction_context.direction,
@@ -81,7 +80,7 @@ class TradeSetupBuilder:
                 direction=direction_context.direction,
             )
             stop_loss = self._project_stop_loss_from_123(
-                price_map=price_map,
+                sequenced_nodes=sequenced_nodes,
                 last_123=last_123,
                 direction=direction_context.direction,
             )
@@ -135,12 +134,6 @@ class TradeSetupBuilder:
 
         return setups
 
-    def _build_price_map(self, sequenced_nodes: List[object]) -> Dict[int, float]:
-        out: Dict[int, float] = {}
-        for node in sequenced_nodes:
-            out[int(getattr(node, "node_id"))] = float(getattr(node, "price"))
-        return out
-
     def _direction_compatible_nodes(
         self,
         sequenced_nodes: List[object],
@@ -150,11 +143,13 @@ class TradeSetupBuilder:
         for node in sequenced_nodes:
             if not getattr(node, "sequence_valid", False):
                 continue
+
             state = getattr(getattr(node, "sequence_state", None), "value", "")
             if direction == "long" and state.startswith("N"):
                 out.append(node)
             elif direction == "short" and state.startswith("S"):
                 out.append(node)
+
         return out
 
     def _find_last_valid_123_before_time(
@@ -169,8 +164,7 @@ class TradeSetupBuilder:
             int(getattr(node, "node_id")): pd.Timestamp(getattr(node, "t"))
             for node in sequenced_nodes
         }
-
-        node_price_map: Dict[int, float] = {
+        price_map: Dict[int, float] = {
             int(getattr(node, "node_id")): float(getattr(node, "price"))
             for node in sequenced_nodes
         }
@@ -185,34 +179,26 @@ class TradeSetupBuilder:
             if not anchor_ids:
                 continue
 
-            anchor_times = [
-                node_time_map[node_id]
-                for node_id in anchor_ids
-                if node_id in node_time_map
-            ]
-            if len(anchor_times) != len(anchor_ids):
+            if not all(node_id in node_time_map for node_id in anchor_ids):
+                continue
+            if not all(node_id in price_map for node_id in anchor_ids):
                 continue
 
-            anchor_prices = [
-                node_price_map[node_id]
-                for node_id in anchor_ids
-                if node_id in node_price_map
-            ]
-            if len(anchor_prices) != len(anchor_ids):
-                continue
+            anchor_times = [node_time_map[node_id] for node_id in anchor_ids]
+            anchor_prices = [price_map[node_id] for node_id in anchor_ids]
 
             pattern_time = max(anchor_times)
             if pattern_time >= cutoff_time:
                 continue
 
             if direction == "long":
-                projected_stop = min(anchor_prices) - self.stop_anchor_buffer_points
-                if projected_stop < entry_price:
-                    eligible_patterns.append((pattern_time, pattern))
+                if min(anchor_prices) >= entry_price:
+                    continue
             else:
-                projected_stop = max(anchor_prices) + self.stop_anchor_buffer_points
-                if projected_stop > entry_price:
-                    eligible_patterns.append((pattern_time, pattern))
+                if max(anchor_prices) <= entry_price:
+                    continue
+
+            eligible_patterns.append((pattern_time, pattern))
 
         if not eligible_patterns:
             return None
@@ -222,12 +208,17 @@ class TradeSetupBuilder:
 
     def _project_stop_loss_from_123(
         self,
-        price_map: Dict[int, float],
+        sequenced_nodes: List[object],
         last_123: Optional[object],
         direction: str,
     ) -> Optional[float]:
         if last_123 is None:
             return None
+
+        price_map: Dict[int, float] = {
+            int(getattr(node, "node_id")): float(getattr(node, "price"))
+            for node in sequenced_nodes
+        }
 
         anchor_ids = getattr(last_123, "anchor_node_ids", [])
         anchor_prices = [price_map[node_id] for node_id in anchor_ids if node_id in price_map]
@@ -253,23 +244,24 @@ class TradeSetupBuilder:
                 continue
             if not getattr(node, "sequence_valid", False):
                 continue
-            eligible_nodes.append(node)
 
-        for node in reversed(eligible_nodes):
             state = getattr(getattr(node, "sequence_state", None), "value", "")
             price = float(getattr(node, "price"))
 
-            if direction == "long" and state in {"N1", "N2"}:
-                projected_target = price + self.target_anchor_buffer_points
-                if projected_target > entry_price:
-                    return state, price
+            if direction == "long":
+                if state in {"N1", "N2"} and price < entry_price:
+                    eligible_nodes.append(node)
+            else:
+                if state in {"S1", "S2"} and price > entry_price:
+                    eligible_nodes.append(node)
 
-            if direction == "short" and state in {"S1", "S2"}:
-                projected_target = price - self.target_anchor_buffer_points
-                if projected_target < entry_price:
-                    return state, price
+        if not eligible_nodes:
+            return None
 
-        return None
+        node = eligible_nodes[-1]
+        state = getattr(getattr(node, "sequence_state", None), "value", "")
+        price = float(getattr(node, "price"))
+        return state, price
 
     def _project_target_from_anchor(
         self,
